@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyMate AI — Your Intelligent Study Companion</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+  <!-- Marked.js for Markdown → HTML rendering (summary) -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!--  UPLOAD SCREEN  (shown by default until a PDF is processed)        -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <div id="upload-screen" class="screen active">
+
+    <!-- Hero header -->
+    <header class="hero">
+      <div class="hero-logo">
+        <span class="logo-icon">📚</span>
+        <h1 class="logo-text">StudyMate <span class="accent">AI</span></h1>
+      </div>
+      <p class="hero-tagline">
+        Upload your lecture notes, textbooks, or slides — get an instant
+        summary, chat with your document, and test yourself with a quiz.
+      </p>
+    </header>
+
+    <!-- Feature pills -->
+    <div class="feature-pills">
+      <span class="pill">✨ AI Summary</span>
+      <span class="pill">💬 RAG Chat</span>
+      <span class="pill">🧠 Auto Quiz</span>
+      <span class="pill">🔒 Private</span>
+    </div>
+
+    <!-- Drop zone -->
+    <div class="upload-card">
+      <div
+        id="drop-zone"
+        class="drop-zone"
+        role="button"
+        tabindex="0"
+        aria-label="Upload a PDF file"
+      >
+        <div id="drop-zone-idle" class="dz-content">
+          <div class="dz-icon">📄</div>
+          <p class="dz-primary">Drag &amp; drop your PDF here</p>
+          <p class="dz-secondary">or</p>
+          <button class="btn btn-primary" id="browse-btn">Browse files</button>
+          <p class="dz-hint">PDF files only · Max 50 MB</p>
+        </div>
+
+        <!-- Shown while uploading / processing -->
+        <div id="drop-zone-loading" class="dz-content hidden">
+          <div class="spinner large"></div>
+          <p class="dz-primary" id="loading-filename">Processing…</p>
+          <p class="dz-secondary" id="loading-status">Extracting text from PDF…</p>
+          <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progress-fill"></div>
+          </div>
+        </div>
+
+        <!-- Hidden file input -->
+        <input
+          type="file"
+          id="file-input"
+          accept=".pdf"
+          aria-hidden="true"
+          style="display:none"
+        />
+      </div>
+
+      <!-- Error message (shown on upload failure) -->
+      <div id="upload-error" class="error-banner hidden" role="alert">
+        <span class="error-icon">⚠️</span>
+        <span id="upload-error-msg">Something went wrong. Please try again.</span>
+        <button class="error-dismiss" id="error-dismiss-btn">✕</button>
+      </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="how-it-works">
+      <h2 class="section-title">How it works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-body">
+            <h3>Upload</h3>
+            <p>Drop any PDF — lecture notes, textbooks, research papers.</p>
+          </div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-body">
+            <h3>Process</h3>
+            <p>AI reads, chunks, and indexes your document in seconds.</p>
+          </div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-body">
+            <h3>Study</h3>
+            <p>Get a summary, ask questions, and ace the auto-generated quiz.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /upload-screen -->
+
+
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <!--  MAIN APP  (hidden until upload completes)                         -->
+  <!-- ═══════════════════════════════════════════════════════════════════ -->
+  <div id="app-screen" class="screen hidden">
+
+    <!-- Top navigation bar -->
+    <nav class="top-nav">
+      <div class="nav-left">
+        <span class="nav-logo">📚</span>
+        <span class="nav-brand">StudyMate <span class="accent">AI</span></span>
+      </div>
+      <div class="nav-center" id="doc-name-display">
+        <span class="doc-icon">📄</span>
+        <span id="nav-doc-name">document.pdf</span>
+      </div>
+      <div class="nav-right">
+        <button class="btn btn-ghost btn-sm" id="new-doc-btn">
+          ↑ Upload new
+        </button>
+      </div>
+    </nav>
+
+    <!-- Tab bar -->
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="summary">
+        <span class="tab-icon">✨</span> Summary
+      </button>
+      <button class="tab-btn" data-tab="chat">
+        <span class="tab-icon">💬</span> Chat
+      </button>
+      <button class="tab-btn" data-tab="quiz">
+        <span class="tab-icon">🧠</span> Quiz
+      </button>
+    </div>
+
+    <!-- ─── TAB: SUMMARY ─────────────────────────────────────────────── -->
+    <div id="tab-summary" class="tab-panel active">
+      <div class="panel-inner">
+
+        <!-- Loading state -->
+        <div id="summary-loading" class="center-state">
+          <div class="spinner large"></div>
+          <p>Generating your summary…</p>
+          <p class="hint">This usually takes 10–20 seconds.</p>
+        </div>
+
+        <!-- Error state -->
+        <div id="summary-error" class="center-state error-state hidden">
+          <div class="state-icon">😕</div>
+          <p>Failed to generate summary.</p>
+          <p class="hint" id="summary-error-msg"></p>
+          <button class="btn btn-primary" id="summary-retry-btn">Try Again</button>
+        </div>
+
+        <!-- Content -->
+        <div id="summary-content" class="summary-body hidden"></div>
+
+      </div>
+    </div>
+
+    <!-- ─── TAB: CHAT ─────────────────────────────────────────────────── -->
+    <div id="tab-chat" class="tab-panel hidden">
+
+      <!-- Message thread -->
+      <div class="chat-thread" id="chat-thread">
+        <!-- Welcome bubble injected by JS -->
+      </div>
+
+      <!-- Input area -->
+      <div class="chat-input-bar">
+        <div class="chat-input-wrap">
+          <textarea
+            id="chat-input"
+            class="chat-textarea"
+            rows="1"
+            placeholder="Ask anything about your document…"
+            aria-label="Type your question"
+          ></textarea>
+          <button class="btn btn-primary btn-icon" id="ask-btn" aria-label="Send">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+            </svg>
+          </button>
+        </div>
+        <p class="chat-hint">Answers are sourced exclusively from your document.</p>
+      </div>
+
+    </div>
+
+    <!-- ─── TAB: QUIZ ─────────────────────────────────────────────────── -->
+    <div id="tab-quiz" class="tab-panel hidden">
+      <div class="panel-inner">
+
+        <!-- Loading -->
+        <div id="quiz-loading" class="center-state">
+          <div class="spinner large"></div>
+          <p>Generating your quiz…</p>
+          <p class="hint">Crafting questions from your document…</p>
+        </div>
+
+        <!-- Error -->
+        <div id="quiz-error" class="center-state error-state hidden">
+          <div class="state-icon">😕</div>
+          <p>Failed to generate quiz.</p>
+          <p class="hint" id="quiz-error-msg"></p>
+          <button class="btn btn-primary" id="quiz-retry-btn">Try Again</button>
+        </div>
+
+        <!-- Active question -->
+        <div id="quiz-question-view" class="quiz-view hidden">
+          <div class="quiz-progress">
+            <div class="quiz-progress-text">
+              Question <span id="q-current">1</span> of <span id="q-total">10</span>
+            </div>
+            <div class="quiz-progress-track">
+              <div class="quiz-progress-fill" id="quiz-progress-fill"></div>
+            </div>
+            <div class="quiz-score-badge">
+              Score: <span id="q-score">0</span>
+            </div>
+          </div>
+
+          <div class="question-card">
+            <p class="question-text" id="q-text"></p>
+            <div class="options-grid" id="options-grid"></div>
+            <div class="explanation-box hidden" id="explanation-box">
+              <strong id="result-label"></strong>
+              <p id="explanation-text"></p>
+            </div>
+            <button class="btn btn-primary btn-next hidden" id="next-btn">
+              Next Question →
+            </button>
+          </div>
+        </div>
+
+        <!-- Score screen (shown after last question) -->
+        <div id="quiz-score-screen" class="quiz-view hidden">
+          <div class="score-card">
+            <div class="score-emoji" id="score-emoji">🎉</div>
+            <h2 class="score-title">Quiz Complete!</h2>
+            <div class="score-display">
+              <span class="score-num" id="final-score">0</span>
+              <span class="score-denom" id="final-total">/10</span>
+            </div>
+            <p class="score-label" id="score-label">Great work!</p>
+            <div class="score-breakdown" id="score-breakdown"></div>
+            <button class="btn btn-primary btn-lg" id="retake-btn">
+              🔄 Retake Quiz
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div><!-- /tab-quiz -->
+
+  </div><!-- /app-screen -->
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

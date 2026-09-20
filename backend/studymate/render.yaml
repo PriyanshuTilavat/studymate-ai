@@ -1,0 +1,22 @@
+# render.yaml — Deploy StudyMate AI on Render.com
+# Full deployment guide at the bottom of this file.
+#
+# Deploy steps:
+#  1. Push this repo to GitHub
+#  2. Go to https://render.com → New → Web Service
+#  3. Connect your GitHub repo, set Root Directory to "studymate"
+#  4. Add environment variable: GEMINI_API_KEY = <your key>
+#  5. Click Deploy!
+
+services:
+  - type: web
+    name: studymate-ai
+    runtime: python
+    rootDir: studymate
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false  # You'll enter this in the Render dashboard
+    plan: free        # Free tier is fine for hackathon demos
+    healthCheckPath: /api/health
