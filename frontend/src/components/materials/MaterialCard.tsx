@@ -1,0 +1,9 @@
+import { ArrowRight, FileText, MoreHorizontal } from "lucide-react";
+import { motion } from "framer-motion";
+import { Link } from "react-router-dom";
+import type { Material } from "../../types";
+
+const bg: Record<string,string> = { violet:"bg-[#eeeaff] text-[#6255d6] dark:bg-[#2b2745]", blue:"bg-[#e6f2ff] text-[#3974b8] dark:bg-[#1c3146]", amber:"bg-[#fff0d9] text-[#ae6829] dark:bg-[#3d3020]" };
+export function MaterialCard({ material }: { material: Material }) {
+  return <motion.article whileHover={{ y:-4 }} className="group flex min-h-[300px] flex-col rounded-[22px] border border-[var(--border)] bg-[var(--surface)] p-5 shadow-[0_8px_30px_rgba(30,27,60,.035)]"><div className="flex items-start justify-between"><span className={`grid size-11 place-items-center rounded-xl ${bg[material.color]}`}><FileText className="size-5"/></span><button aria-label="More options"><MoreHorizontal className="size-5 text-[var(--muted)]"/></button></div><h3 className="mt-6 text-lg font-semibold tracking-tight text-[var(--ink)]">{material.title}</h3><p className="mt-1 text-xs text-[var(--muted)]">{material.subject}</p><p className="mt-3 text-xs text-[var(--muted)]">{material.pages} pages · {material.topics.length} topics</p><div className="mt-6 flex justify-between text-xs"><span className="text-[var(--muted)]">Progress</span><b className="text-[var(--ink)]">{material.progress}%</b></div><div className="mt-2 h-1.5 rounded-full bg-[var(--surface-2)]"><div className="h-full rounded-full bg-[#6558d9]" style={{width:`${material.progress}%`}}/></div><p className="mt-4 text-[11px] text-[var(--muted)]">Last studied {material.lastStudied}</p><Link to={`/app/materials/${material.id}`} className="mt-auto flex items-center justify-between border-t border-[var(--border)] pt-4 text-xs font-semibold text-[var(--ink)]">Continue <ArrowRight className="size-4 transition-transform group-hover:translate-x-1"/></Link></motion.article>;
+}

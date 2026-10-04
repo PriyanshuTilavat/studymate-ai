@@ -1,0 +1,3 @@
+import { Bell } from "lucide-react";
+import { PageTitle } from "../components/ui/PageTitle";
+export default function Notifications(){return <div><PageTitle title="Notifications" subtitle="Important updates from your learning workspace."/><div className="py-24 text-center"><span className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#6558d9]/10 text-[#6558d9]"><Bell className="size-6"/></span><h2 className="mt-5 text-lg font-semibold text-[var(--ink)]">You're all caught up</h2><p className="mt-2 text-sm text-[var(--muted)]">New study reminders and results will appear here.</p></div></div>}
