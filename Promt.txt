@@ -1,0 +1,1393 @@
+You are an expert senior full-stack engineer, software architect, UI/UX designer, database architect, AI/RAG engineer, and DevOps engineer.
+
+I want you to build a complete, professional, production-ready AI-powered study and learning web application from scratch.
+
+This is NOT a college-demo project. It should look and behave like a real modern SaaS product that can be publicly deployed and potentially receive a large number of users.
+
+Before writing or generating code, deeply analyze the complete requirements below, decide the best implementation approach, and then build the project systematically.
+
+==================================================
+
+1. PRODUCT OVERVIEW
+    ==================================================
+
+Build an AI-powered study platform where users can upload their study material and interact with it using AI.
+
+The platform is especially useful for students but should be usable by anyone.
+
+A user must create an account and log in before using the main application.
+
+Users can upload study material in three formats:
+
+1. PDF
+2. Images
+3. Plain text
+
+The application supports printed, typed, or scanned content.
+
+HANDWRITTEN NOTES ARE NOT SUPPORTED.
+
+After uploading material, the application should process it and create a workspace where the user can:
+
+* Read/view their material
+* Generate and access an AI summary
+* Generate and take an AI quiz
+* Chat with the uploaded material using AI
+* Revisit the material later
+* View saved summaries
+* View quiz attempts/results
+* Continue previous conversations
+
+All user data must be private and isolated.
+
+User A must NEVER be able to access User B’s materials, chats, summaries, quizzes, files, or progress.
+
+==================================================
+2. CORE TECH STACK — LOCKED
+
+Frontend + Full Stack:
+
+* Next.js
+* App Router
+* React
+* JavaScript preferred unless a specific TypeScript requirement is technically necessary
+
+Backend:
+
+* Next.js server-side architecture
+* Route Handlers / API routes
+* Server-side services
+
+Database:
+
+* PostgreSQL
+
+Database platform:
+
+* Supabase
+
+Authentication:
+
+* Supabase Auth
+
+File Storage:
+
+* Supabase Storage
+
+Vector Database:
+
+* PostgreSQL + pgvector
+
+AI:
+
+* Gemini API
+
+Deployment:
+
+* Vercel
+
+Source Control:
+
+* GitHub
+
+Architecture must be provider-independent wherever practical.
+
+Create an abstraction such as:
+
+AIService
+GeminiProvider
+
+Do not tightly couple the entire application to Gemini-specific code.
+
+==================================================
+3. IMPORTANT SECURITY RULE
+
+NEVER expose the Gemini API key to the browser.
+
+The Gemini API key must remain server-side.
+
+DO NOT use:
+
+NEXT_PUBLIC_GEMINI_API_KEY
+
+Use a server-only environment variable instead.
+
+All AI requests must go through the secure server-side backend.
+
+Also protect:
+
+* Supabase credentials
+* database access
+* storage access
+* API routes
+* user sessions
+* private files
+
+==================================================
+4. USER AUTHENTICATION
+
+Authentication is mandatory.
+
+Implement:
+
+* Sign Up
+* Login
+* Logout
+* Session persistence
+* Protected application routes
+* Authentication state handling
+* Appropriate auth error messages
+
+Use Supabase Auth.
+
+Do NOT create or store password hashes manually in the application’s own database.
+
+Use Supabase Auth for credentials.
+
+Create a profile/user table linked to the authenticated Supabase user ID.
+
+Possible profile fields:
+
+* id
+* name
+* email
+* avatar_url if needed
+* created_at
+* updated_at
+
+==================================================
+5. MAIN APPLICATION STRUCTURE
+
+The website should have:
+
+PUBLIC AREA:
+
+/
+
+* Landing page
+
+/login
+/signup
+
+/about
+/contact
+/privacy
+/terms
+
+404 page
+
+PROTECTED AREA:
+
+/app
+
+* Dashboard
+
+/app/library
+
+* My Library
+
+/app/upload
+
+* Upload material
+
+/app/material/[id]
+
+* Material workspace
+
+/app/material/[id]/summary
+
+* Summary
+
+/app/material/[id]/quiz
+
+* Quiz
+
+/app/material/[id]/chat
+
+* Material-aware chat
+
+/app/history
+
+* History/progress
+
+/app/settings
+
+* User settings
+
+You may adjust the exact routing structure if a better Next.js App Router architecture exists, but preserve the same functionality.
+
+==================================================
+6. LANDING PAGE
+
+Create a polished modern SaaS landing page.
+
+It should immediately communicate:
+
+* Upload your study material
+* Understand it faster
+* Test yourself
+* Ask questions from your material
+
+Include sections such as:
+
+Hero
+Features
+How It Works
+Supported Material Types
+AI capabilities
+Why use the platform
+Call to Action
+Footer
+
+The landing page should feel like a real startup/SaaS product.
+
+Avoid the visual appearance of a generic student college project.
+
+Use:
+
+* modern typography
+* proper spacing
+* elegant cards
+* subtle animations
+* polished buttons
+* responsive layout
+* professional visual hierarchy
+
+==================================================
+7. DASHBOARD
+
+After login, users should reach a professional dashboard.
+
+Display useful information such as:
+
+* Welcome message
+* Total materials
+* Recent materials
+* Recent quiz activity
+* Study activity/progress
+* Quick upload button
+* Continue studying
+* Recent chats
+
+If there is no data, show polished empty states.
+
+Example:
+
+“No study materials yet”
+“Upload your first PDF, image, or text and start learning.”
+
+==================================================
+8. MY LIBRARY
+
+Create a proper material library.
+
+Users should be able to:
+
+* Search materials
+* Filter by type
+* Sort by recent/old
+* Open material
+* Open summary
+* Start quiz
+* Continue chat
+* Delete material
+
+Material cards can show:
+
+* Title
+* File type
+* Date uploaded
+* Processing status
+* Available AI features
+
+Support:
+
+* PDF
+* Image
+* Text
+
+==================================================
+9. MATERIAL UPLOAD
+
+Create a professional drag-and-drop upload interface.
+
+Users can:
+
+* Drag and drop
+* Browse files
+* Upload PDF
+* Upload image
+* Paste/type text
+
+Validate:
+
+* file type
+* file size
+* empty files
+* corrupted files
+* unsupported formats
+
+Show:
+
+* upload progress
+* processing progress
+* success state
+* failure state
+* retry option
+
+Never leave the user with an unexplained loading screen.
+
+==================================================
+10. DOCUMENT PROCESSING PIPELINE
+
+Implement this architecture:
+
+PDF / Image / Text
+↓
+Validation
+↓
+Secure Storage
+↓
+Text Extraction / OCR
+↓
+Cleaning
+↓
+Chunking
+↓
+Embeddings
+↓
+pgvector
+↓
+AI Features
+
+PDF:
+
+Extract text from normal text-based PDFs.
+
+Images:
+
+Use OCR for printed/typed/scanned text.
+
+Handwritten notes:
+
+Explicitly unsupported.
+
+If OCR fails or the image contains unsupported handwriting, clearly tell the user that the platform currently supports printed/typed/scanned content rather than silently generating bad data.
+
+Plain text:
+
+Directly clean and process the supplied text.
+
+==================================================
+11. CHUNKING + EMBEDDINGS
+
+Use a proper RAG-ready document pipeline.
+
+After text extraction:
+
+* normalize text
+* remove unnecessary noise
+* preserve meaningful structure
+* split into sensible chunks
+* generate embeddings
+* store chunks in PostgreSQL
+* store embeddings using pgvector
+
+Do not send an entire huge document to Gemini if it can be avoided.
+
+Design the chunking system to work for both small and large study materials.
+
+Include useful metadata where appropriate:
+
+* material_id
+* page number
+* chunk index
+* source information
+* created_at
+
+==================================================
+12. AI SUMMARY
+
+Each material should have an AI-generated summary.
+
+The summary should be:
+
+* concise
+* point-wise
+* easy to understand
+* topic-specific
+* useful for revision
+* structured
+
+Prefer structured AI output rather than relying on uncontrolled plain text.
+
+A summary can contain:
+
+* title
+* overview
+* major topics
+* important concepts
+* key takeaways
+* important definitions where appropriate
+
+Save generated summaries in the database.
+
+IMPORTANT:
+
+If a summary already exists, opening the summary should load the saved version instead of calling Gemini again unnecessarily.
+
+Only regenerate when explicitly requested.
+
+==================================================
+13. AI QUIZ
+
+Create an AI-powered quiz system.
+
+Default minimum:
+
+5 questions.
+
+Allow useful options such as:
+
+* 5 questions
+* 10 questions
+* 15 questions
+* AI recommended
+
+Difficulty:
+
+* Easy
+* Medium
+* Hard
+* Mixed
+
+Question type:
+
+Primarily MCQs.
+
+Each question should contain:
+
+* question
+* 4 options
+* correct answer
+* explanation
+
+The quiz should be generated from the selected material.
+
+Do not create questions unrelated to the uploaded material.
+
+Validate AI output before storing it.
+
+The system must verify:
+
+* correct number of options
+* valid correct answer
+* non-empty question
+* explanation
+* valid structured format
+
+==================================================
+14. QUIZ ATTEMPTS
+
+Users can take the same quiz multiple times.
+
+At the end show:
+
+* score
+* total questions
+* percentage
+* correct answers
+* incorrect answers
+
+Also provide answer review.
+
+For each question, optionally show:
+
+* user’s answer
+* correct answer
+* explanation
+
+Store attempts in the database.
+
+The frontend should not unnecessarily expose answer keys in a way that makes cheating trivial.
+
+Score calculation should happen server-side.
+
+==================================================
+15. MATERIAL-AWARE AI CHAT
+
+Create a conversational AI chat specifically grounded in the selected study material.
+
+A user can ask:
+
+“What is normalization?”
+
+“Explain this in simple words.”
+
+“Give me an example.”
+
+“Summarize chapter 2.”
+
+“What are the important points for an exam?”
+
+The AI should answer based on the uploaded material.
+
+RAG flow:
+
+User Question
+↓
+Current Material
+↓
+Question Embedding
+↓
+Vector Search
+↓
+Relevant Chunks
+↓
+Recent Chat History
+↓
+Gemini
+↓
+Answer
+
+IMPORTANT:
+
+If the uploaded material does not contain enough information to answer the question, the AI should clearly say that the material does not provide sufficient information.
+
+Do not confidently hallucinate unsupported material-specific facts.
+
+The AI can distinguish between:
+
+* information found in the material
+* information not found in the material
+
+==================================================
+16. CHAT HISTORY
+
+Save chat sessions.
+
+Users should be able to:
+
+* continue previous conversations
+* create a new chat
+* see chat history
+* delete chats if appropriate
+
+Store:
+
+* session
+* messages
+* role
+* content
+* timestamps
+
+For very long conversations, do NOT blindly send hundreds of messages to Gemini.
+
+Use a sensible context strategy:
+
+* relevant material chunks
+* recent messages
+* conversation summary when necessary
+
+==================================================
+17. DATABASE ARCHITECTURE
+
+Design a production-quality PostgreSQL schema.
+
+Core entities should include approximately:
+
+profiles
+materials
+material_files
+material_chunks
+summaries
+chat_sessions
+chat_messages
+quizzes
+quiz_questions
+quiz_attempts
+quiz_answers
+progress
+usage_records
+
+Use:
+
+* UUID primary keys
+* foreign keys
+* indexes
+* timestamps
+* constraints
+* appropriate cascading behavior
+* soft-delete where useful
+
+Important relationships:
+
+User
+├── Materials
+│    ├── Files
+│    ├── Chunks
+│    ├── Summary
+│    ├── Quizzes
+│    │     ├── Questions
+│    │     └── Attempts
+│    │           └── Answers
+│    └── Chat Sessions
+│           └── Messages
+│
+├── Progress
+└── Usage Records
+
+Use Supabase Row Level Security.
+
+RLS must enforce ownership.
+
+Never rely solely on frontend checks for authorization.
+
+==================================================
+18. STORAGE ARCHITECTURE
+
+Use Supabase Storage for uploaded files.
+
+Organize files using user-specific paths, for example:
+
+user_id/material_id/file
+
+Do not expose private files publicly unless there is a deliberate secure reason.
+
+Use signed URLs or secure server-side access when necessary.
+
+When a material is deleted, handle related stored files and database records correctly.
+
+==================================================
+19. API ARCHITECTURE
+
+Create clean API/service boundaries.
+
+Conceptual API groups:
+
+/api/auth
+/api/materials
+/api/upload
+/api/processing
+/api/summary
+/api/quiz
+/api/chat
+/api/progress
+/api/usage
+
+Example operations:
+
+GET    /api/materials
+POST   /api/materials
+GET    /api/materials/[id]
+DELETE /api/materials/[id]
+
+POST   /api/materials/[id]/summary
+
+POST   /api/materials/[id]/quiz
+GET    /api/quizzes/[id]
+POST   /api/quizzes/[id]/attempt
+
+GET    /api/chat/[id]
+POST   /api/chat/[id]/message
+
+GET    /api/progress
+GET    /api/usage
+
+Adjust exact endpoint naming if necessary for a cleaner architecture.
+
+Every protected API must:
+
+1. Verify authentication
+2. Identify user
+3. Validate input
+4. Verify resource ownership
+5. Apply rate/usage limits where appropriate
+6. Execute business logic
+7. Return consistent responses
+
+==================================================
+20. SERVICE ARCHITECTURE
+
+Do NOT put all logic inside route handlers.
+
+Use a layered architecture such as:
+
+Route Handler
+↓
+Service
+↓
+Repository / Data Access
+↓
+Database / Storage / AI
+
+Examples:
+
+SummaryService
+QuizService
+ChatService
+MaterialService
+ProcessingService
+UploadService
+UsageService
+
+AI layer:
+
+AIService
+GeminiProvider
+
+This makes future AI-provider replacement possible.
+
+==================================================
+21. ERROR HANDLING
+
+Create consistent API responses.
+
+Success:
+
+{
+“success”: true,
+“data”: {}
+}
+
+Error:
+
+{
+“success”: false,
+“error”: {
+“code”: “MATERIAL_NOT_FOUND”,
+“message”: “Material not found.”
+}
+}
+
+Handle:
+
+* invalid input
+* unauthorized access
+* forbidden access
+* missing resources
+* upload failures
+* OCR failures
+* PDF extraction failures
+* AI failures
+* database failures
+* rate limits
+* network failures
+* malformed AI output
+* timeouts
+
+Never expose internal secrets or sensitive stack traces to users.
+
+==================================================
+22. RATE LIMITING + USAGE
+
+Design usage tracking from the beginning.
+
+Potential tracked actions:
+
+* uploads
+* summary generations
+* quiz generations
+* chat messages
+* AI requests
+
+Do not assume AI APIs are unlimited.
+
+Create a configurable usage/rate-limit system.
+
+Keep limits configurable so they can be changed later without rewriting the entire application.
+
+==================================================
+23. IDEMPOTENCY + DUPLICATE PROCESSING
+
+Avoid accidentally processing the same upload multiple times.
+
+If a processing request is repeated because of:
+
+* refresh
+* retry
+* network failure
+* duplicate click
+
+the system should avoid unnecessary duplicate AI work.
+
+Use suitable status fields, unique identifiers, or idempotency mechanisms.
+
+==================================================
+24. SECURITY
+
+Treat this as a public-facing application.
+
+Implement appropriate security measures including:
+
+* authentication
+* authorization
+* Supabase RLS
+* server-only secrets
+* input validation
+* file validation
+* MIME/type validation
+* upload size limits
+* secure storage paths
+* rate limiting
+* protection against unauthorized material IDs
+* protection against prompt injection where practical
+* safe rendering of AI-generated content
+* no arbitrary HTML injection
+* secure cookies/session handling
+* environment variable separation
+* production error handling
+
+Never trust client-provided user IDs.
+
+Always derive authenticated identity from the server-side session.
+
+==================================================
+25. UI/UX DESIGN
+
+Design language:
+
+Modern AI SaaS + education.
+
+Think:
+
+* clean
+* premium
+* minimal
+* friendly
+* professional
+* intelligent
+* easy to navigate
+
+Do NOT make it look like:
+
+* a basic college project
+* a template with random gradients
+* an over-animated AI landing page
+
+Use:
+
+* excellent typography
+* consistent spacing
+* rounded cards where appropriate
+* subtle borders
+* tasteful shadows
+* clear hierarchy
+* responsive layouts
+* accessible contrast
+* meaningful icons
+* subtle animations
+
+==================================================
+26. DARK MODE
+
+Dark mode is mandatory.
+
+Provide:
+
+* Light mode
+* Dark mode
+* sensible theme persistence
+
+All screens must work correctly in both themes.
+
+Do not simply invert colors.
+
+Design proper dark-theme surfaces, borders, text hierarchy, inputs, modals, code/text areas, etc.
+
+==================================================
+27. RESPONSIVENESS
+
+The website must work properly on:
+
+* desktop
+* laptop
+* tablet
+* mobile
+
+Do not design desktop-only layouts.
+
+Pay particular attention to:
+
+* sidebar behavior
+* mobile navigation
+* upload interface
+* material workspace
+* chat
+* quiz
+* cards
+* tables
+* modals
+
+==================================================
+28. MATERIAL WORKSPACE
+
+The central material workspace should feel like the main product.
+
+Example:
+
+⸻
+
+DBMS Normalization Notes
+
+PDF • 12 pages • Ready
+
+[ Summary ] [ Quiz ] [ Chat ]
+
+Depending on the selected tab, show the appropriate experience.
+
+Summary:
+
+Structured AI summary.
+
+Quiz:
+
+Quiz setup → Questions → Result → Review.
+
+Chat:
+
+Conversational interface grounded in this material.
+
+==================================================
+29. LOADING + EMPTY + ERROR STATES
+
+Implement proper states everywhere.
+
+Examples:
+
+Skeleton loaders
+Upload progress
+Processing indicator
+AI generation indicator
+Empty library
+Empty chat
+Quiz loading
+Network error
+AI unavailable
+Processing failed
+Retry button
+404
+Unauthorized
+Not found
+
+Never leave users staring at a blank screen.
+
+==================================================
+30. ACCESSIBILITY
+
+Follow good accessibility practices:
+
+* semantic HTML
+* keyboard navigation
+* focus states
+* accessible buttons
+* labels
+* alt text
+* readable contrast
+* proper form validation messages
+
+==================================================
+31. PERFORMANCE
+
+Optimize for real users.
+
+Use appropriate:
+
+* server components
+* client components only when needed
+* lazy loading
+* pagination
+* database indexes
+* caching
+* efficient queries
+* optimized images
+* streaming where useful
+* background processing architecture where appropriate
+
+Do not load an entire user’s library if they have hundreds/thousands of materials.
+
+==================================================
+32. AI OUTPUT VALIDATION
+
+AI responses must not be blindly trusted.
+
+For structured features:
+
+Summary
+Quiz
+Potential metadata
+
+validate AI output before saving.
+
+If malformed:
+
+* retry when appropriate
+* repair/normalize when safe
+* otherwise show a useful error
+
+Do not silently store corrupt data.
+
+==================================================
+33. FUTURE-READY ARCHITECTURE
+
+The current application is free for users.
+
+There is NO payment/subscription requirement right now.
+
+However, design the architecture so future features can be added without rebuilding the whole system.
+
+Possible future features:
+
+* paid plans
+* usage quotas
+* flashcards
+* AI study modes
+* exam revision mode
+* progress analytics
+* sharing
+* collaboration
+* selected-text explanations
+* additional AI providers
+* additional file types
+
+Do not implement unnecessary future features unless they improve the current architecture.
+
+==================================================
+34. PROJECT STRUCTURE
+
+Create a clean production-quality Next.js structure.
+
+Use an organization along the lines of:
+
+app/
+components/
+lib/
+services/
+repositories/
+ai/
+database/
+hooks/
+utils/
+types/
+public/
+
+But adapt the exact structure to modern Next.js App Router best practices.
+
+Separate:
+
+* UI
+* business logic
+* database access
+* AI integration
+* authentication
+* validation
+* utilities
+
+Avoid giant files.
+
+Avoid duplicated code.
+
+Avoid putting everything inside one component.
+
+==================================================
+35. ENVIRONMENT VARIABLES
+
+Create a proper .env.example.
+
+Include appropriate variables such as:
+
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+SUPABASE_SERVICE_ROLE_KEY
+GEMINI_API_KEY
+
+Only variables that genuinely need NEXT_PUBLIC_ should use it.
+
+Never commit real secrets.
+
+Add appropriate .gitignore configuration.
+
+==================================================
+36. DATABASE MIGRATIONS
+
+Provide complete SQL/schema setup for:
+
+* tables
+* extensions
+* pgvector
+* indexes
+* constraints
+* RLS
+* RLS policies
+* necessary functions
+
+The project should be reproducible from a fresh Supabase project.
+
+==================================================
+37. DOCUMENTATION
+
+Create a professional README containing:
+
+* Project overview
+* Features
+* Tech stack
+* Architecture
+* Folder structure
+* Environment setup
+* Supabase setup
+* Database setup
+* Storage setup
+* Gemini setup
+* Local development
+* Build instructions
+* Deployment to Vercel
+* Security notes
+* Troubleshooting
+
+Also explain important architectural decisions.
+
+==================================================
+38. TESTING
+
+Add appropriate testing structure.
+
+At minimum, design tests for:
+
+* authentication
+* material ownership
+* upload validation
+* material CRUD
+* summary generation
+* quiz validation
+* quiz scoring
+* chat authorization
+* RAG retrieval
+* API error handling
+
+Do not make fake tests that merely test implementation details without meaningful assertions.
+
+==================================================
+39. PRODUCTION CHECKLIST
+
+Before considering the project complete, verify:
+
+* Authentication works
+* Protected routes work
+* User isolation works
+* RLS works
+* Upload works
+* PDF processing works
+* Image OCR works
+* Text input works
+* Handwritten limitation is communicated
+* Material processing status works
+* Summary generation works
+* Summary caching works
+* Quiz generation works
+* Quiz attempts work
+* Server-side scoring works
+* Chat works
+* RAG retrieval works
+* Chat history works
+* Dark mode works
+* Mobile UI works
+* Error states work
+* Loading states work
+* Rate limits exist
+* Secrets are protected
+* No API keys are exposed
+* Database indexes exist
+* README is complete
+* Production build succeeds
+
+==================================================
+40. IMPORTANT DEVELOPMENT RULES
+
+Do NOT:
+
+* create a fake frontend with dummy buttons
+* hard-code fake AI responses
+* pretend an API works when it does not
+* expose API keys
+* store passwords manually
+* skip RLS
+* ignore authorization
+* create giant monolithic files
+* use mock data as the final implementation
+* leave TODO placeholders for core features
+* silently ignore errors
+
+The core functionality must actually work.
+
+If a third-party service requires configuration that cannot be completed automatically, clearly document the exact setup required rather than replacing it with fake functionality.
+
+==================================================
+41. CODE QUALITY
+
+Write clean, maintainable code.
+
+Prefer:
+
+* reusable components
+* reusable services
+* clear naming
+* small focused functions
+* proper validation
+* comments only where useful
+* predictable error handling
+* secure defaults
+
+Do not over-engineer unnecessarily.
+
+Use modern stable Next.js practices.
+
+==================================================
+42. BUILD STRATEGY
+
+Build systematically.
+
+Recommended implementation order:
+
+PHASE 1
+Project setup
+Next.js
+Dependencies
+Environment configuration
+
+PHASE 2
+Supabase
+Authentication
+Database
+RLS
+Storage
+
+PHASE 3
+Application shell
+Navigation
+Dashboard
+Library
+Settings
+Theme
+
+PHASE 4
+Upload system
+Material creation
+Storage
+Validation
+
+PHASE 5
+PDF extraction
+OCR
+Text processing
+Chunking
+Embeddings
+pgvector
+
+PHASE 6
+Summary system
+
+PHASE 7
+Quiz system
+Quiz attempts
+Scoring
+Review
+
+PHASE 8
+RAG chat
+Chat sessions
+Chat history
+Context management
+
+PHASE 9
+Usage/rate limiting
+Security hardening
+Error handling
+
+PHASE 10
+Responsive polish
+Accessibility
+Performance
+
+PHASE 11
+Testing
+Documentation
+
+PHASE 12
+Production build
+Deployment preparation
+
+==================================================
+43. IMPORTANT OUTPUT BEHAVIOR
+
+Do not dump thousands of lines of unexplained code without structure.
+
+First establish the project architecture.
+
+Then create files systematically.
+
+For every major implementation stage:
+
+1. Explain what is being built.
+2. Show the relevant file/folder structure.
+3. Provide complete code for the files being created or modified.
+4. Explain required environment variables/configuration.
+5. Explain how to run/test that stage.
+6. Check for likely errors.
+7. Continue to the next stage.
+
+If the platform has a practical response/token limitation, continue in multiple sequential stages rather than omitting core functionality.
+
+Do not replace important functionality with pseudo-code.
+
+==================================================
+44. FINAL PRODUCT STANDARD
+
+The final product should feel like a real public AI learning platform.
+
+A new user should be able to:
+
+1. Visit the landing page.
+2. Create an account.
+3. Log in.
+4. Upload a PDF/image/text.
+5. Wait while it processes.
+6. Open the material workspace.
+7. Read an AI summary.
+8. Generate/take a quiz.
+9. See score and explanations.
+10. Ask questions in material-aware chat.
+11. Close the website.
+12. Return later.
+13. Find the material in the library.
+14. Continue the chat.
+15. Reuse the saved summary/quiz.
+
+Everything should be persistent through the database.
+
+The experience should be polished, responsive, secure, scalable, and professional.
+
+==================================================
+45. YOUR ROLE
+
+Do not merely act as a code generator.
+
+Act as the senior engineer responsible for the entire product.
+
+If a requirement has multiple technically valid implementations, choose the implementation that is:
+
+* secure
+* maintainable
+* scalable
+* practical
+* cost-conscious
+* compatible with the locked stack
+
+Explain important decisions briefly.
+
+Do not ask unnecessary questions when a sensible engineering decision can be made.
+
+When something genuinely requires a user decision or external credential, clearly identify it.
+
+Start by presenting the finalized architecture and project structure, then begin implementation phase-by-phase.
+
+The goal is a COMPLETE WORKING PRODUCT, not a visual prototype.
